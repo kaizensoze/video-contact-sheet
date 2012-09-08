@@ -40,7 +40,7 @@ function generateMontage(videoInfo) {
     exec(generateThumbnailCommand);
   }
 
-  var generateMontageCommand = "cd "+folderName+" && montage $(ls | sort -n) -tile "+cols+"x"+rows+" -geometry "+dimensions+"+2+2 ../montage.png";
+  var generateMontageCommand = "cd "+folderName+" && montage $(ls | sort -n) -tile "+cols+"x"+rows+" -geometry "+dimensions+"+1+1 ../montage.png";
   exec(generateMontageCommand);
 
   // Remove temp folder containing thumbnails.
