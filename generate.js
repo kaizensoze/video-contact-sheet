@@ -8,11 +8,11 @@ var fs = require('fs');
 // };
 
 function escapeRegExp(str) {
-  return str.replace(/[\[\]\{\}\(\)\*\+\?\\\^\$\|\ ]/g, "\\$&");
+  return str.replace(/[\[\]\{\}\(\)\*\+\?\\\^\$\|\ \'\"]/g, "\\$&");
 }
 
 function generateMontage(videoInfo) {
-  var dimensions = '326x246';  // CONFIG
+  var dimensions = '326x246';//326x246';  // CONFIG
   var cols =  3; // CONFIG
   var rows = 8; // CONFIG
   var numThumbnails = cols * rows;
@@ -31,7 +31,7 @@ function generateMontage(videoInfo) {
   try {
     fs.mkdirSync(folderName);
   } catch (e) {
-    console.log(e);
+    // console.log(e);
   }
 
   for (var i=0; i < numThumbnails; i++) {
@@ -40,16 +40,15 @@ function generateMontage(videoInfo) {
     exec(generateThumbnailCommand);
   }
 
-  // cd video-thumbnails && montage $(ls | sort -n) -tile 3x9 -geometry 326x246+2+2 ../montage.png
-  var generateMontageCommand = "cd "+folderName+" && montage $(ls | sort -n) -tile "+cols+"x"+rows+" -geometry "+dimensions+"+2+2 ../montage.png && cd ..";
+  var generateMontageCommand = "cd "+folderName+" && montage $(ls | sort -n) -tile "+cols+"x"+rows+" -geometry "+dimensions+"+2+2 ../montage.png";
   exec(generateMontageCommand);
 
   // Remove temp folder containing thumbnails.
-  try {
-    fs.rmdirSync(folderName);
-  } catch (e) {
-    console.log(e);
-  }
+  // try {
+  //   fs.rmdirSync(folderName);
+  // } catch (e) {
+  //   console.log(e);
+  // }
 }
 
 function readFileInfo(error, stdout, stderr) {
@@ -59,7 +58,9 @@ function readFileInfo(error, stdout, stderr) {
   var format = result['format'];
   var filename = format['filename'].split('/').pop();
   var duration = format['duration'].split('.')[0];
-  var filesize = format['size'];
+
+  var filesizePieces = format['size'].split(' ');
+  var filesize = Math.round(filesizePieces[0]) + ' ' + filesizePieces[1];
 
   var streams = result['streams'];
   var videoTrack;
@@ -80,7 +81,8 @@ function readFileInfo(error, stdout, stderr) {
     'resolution': resolution
   };
 
-  // console.log(videoInfo);
+  console.log(videoInfo);
+
   generateMontage(videoInfo);
 }
 
