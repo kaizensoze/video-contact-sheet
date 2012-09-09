@@ -3,6 +3,7 @@
 require 'rubygems'
 require 'json'
 require 'pp'
+require 'fileutils'
 
 
 def escape_for_regex(str)
@@ -71,17 +72,26 @@ def run
   video_info[:duration_in_seconds] = video_duration_in_seconds
 
   # Create temp folder to store thumbnails.
+  thumbnail_folder_name = 'video-thumbnails-temp'
   begin
-    Dir.mkdir('video-thumbnails-temp')
-  rescue
+    Dir.mkdir(thumbnail_folder_name)
+  rescue Exception => ex
   end
 
-  
+  (0..montage_config[:num_thumbnails]-1).to_a.each do |i|
+    ss_val = i * (video_info[:duration_in_seconds] / montage_config[:num_thumbnails])
+    `ffmpeg -v quiet -ss #{ss_val} -i #{input_video_filename} -s #{montage_config[:dimensions]} #{thumbnail_folder_name}/#{i+1}.png`
+  end
+
+  cols = montage_config[:cols]
+  rows = montage_config[:rows]
+  dimensions = montage_config[:dimensions]
+  `cd #{thumbnail_folder_name} && montage -quiet $(ls | sort -n) -tile #{cols}x#{rows} -geometry #{dimensions}+1+1 ../montage.png`
 
   # Remove temp thumbnail folder.
   begin
-    Dir.rmdir('video-thumbnails-temp')
-  rescue
+    FileUtils.rm_rf(thumbnail_folder_name)
+  rescue Exception => ex
   end
 end
 
