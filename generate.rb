@@ -86,7 +86,9 @@ def run
   cols = montage_config[:cols]
   rows = montage_config[:rows]
   dimensions = montage_config[:dimensions]
-  `cd #{thumbnail_folder_name} && montage -quiet $(ls | sort -n) -tile #{cols}x#{rows} -geometry #{dimensions}+1+1 ../montage.png`
+  `cd #{thumbnail_folder_name} && montage -quiet $(ls | sort -n) -label 'blah' -tile #{cols}x#{rows} -geometry #{dimensions}+1+1 ../montage.png`
+
+  # convert montage.png -gravity North -background white -fill black -font Helvetica -splice 0x200 -annotate +0+2 'Testing' annotated_montage.png
 
   # Remove temp thumbnail folder.
   begin
