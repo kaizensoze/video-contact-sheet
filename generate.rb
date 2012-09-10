@@ -93,9 +93,9 @@ def run
 
   label = "File: #{' '*6}#{video_info[:filename]}\nDuration: #{' '*2}#{video_info[:duration]}\nSize: #{' '*6}#{video_info[:filesize]}\nResolution: #{video_info[:resolution]}"
 
-  `cd #{thumbnail_folder_name} && montage -quiet $(ls | sort -n) -label 'blah' -font Courier-Regular -tile #{cols}x#{rows} -geometry #{dimensions}+1+1 ../montage.png`
+  `cd #{thumbnail_folder_name} && montage $(ls | sort -n) -font Courier-Regular -background black -tile #{cols}x#{rows} -geometry #{dimensions}+1+1 ../montage.png`
 
-  `convert montage.png -splice 0x160 -font Courier-Regular -pointsize 22 -annotate +50+50 "#{label}" montage.png`
+  `convert montage.png -background '#EDEDED' -splice 0x130 -font Courier-Regular -pointsize 22 -annotate +15+34 "#{label}" montage.png`
 
   # Remove temp thumbnail folder.
   begin
