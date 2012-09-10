@@ -14,7 +14,11 @@ end
 def run
   input_video_filename = ARGV[0]
   if input_video_filename.nil?
-    abort("Aborting. (Please provide an input video filepath).")
+    custom_abort("Please provide an input video filepath.")
+  end
+
+  if not File.exists?(input_video_filename)
+    custom_abort("Unable to find filepath.")
   end
 
   input_video_filename = Regexp.escape(input_video_filename)
@@ -42,7 +46,7 @@ def run
   end
 
   if video_track.nil?
-    abort("Aborting. (No video track detected).")
+    custom_abort("No video track detected.")
   end
 
   resolution = "#{video_track['width']}x#{video_track['height']}"
@@ -86,15 +90,22 @@ def run
   cols = montage_config[:cols]
   rows = montage_config[:rows]
   dimensions = montage_config[:dimensions]
-  `cd #{thumbnail_folder_name} && montage -quiet $(ls | sort -n) -label 'blah' -tile #{cols}x#{rows} -geometry #{dimensions}+1+1 ../montage.png`
 
-  # convert montage.png -gravity North -background white -fill black -font Helvetica -splice 0x200 -annotate +0+2 'Testing' annotated_montage.png
+  label = "File: #{' '*6}#{video_info[:filename]}\nDuration: #{' '*2}#{video_info[:duration]}\nSize: #{' '*6}#{video_info[:filesize]}\nResolution: #{video_info[:resolution]}"
+
+  `cd #{thumbnail_folder_name} && montage -quiet $(ls | sort -n) -label 'blah' -font Courier-Regular -tile #{cols}x#{rows} -geometry #{dimensions}+1+1 ../montage.png`
+
+  `convert montage.png -splice 0x160 -font Courier-Regular -pointsize 22 -annotate +50+50 "#{label}" montage.png`
 
   # Remove temp thumbnail folder.
   begin
     FileUtils.rm_rf(thumbnail_folder_name)
   rescue Exception => ex
   end
+end
+
+def custom_abort(reason)
+  abort("Aborting. (#{reason})")
 end
 
 if __FILE__ == $0
