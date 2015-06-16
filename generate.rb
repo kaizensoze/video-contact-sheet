@@ -97,6 +97,9 @@ def run
 
   `convert montage.png -background '#EDEDED' -splice 0x130 -font Courier-Regular -pointsize 22 -annotate +15+34 "#{label}" montage.png`
 
+  output_filename = input_video_filename.sub /\.[^.]+\z/, ".png"
+  `mv montage.png #{output_filename}`
+
   # Remove temp thumbnail folder.
   begin
     FileUtils.rm_rf(thumbnail_folder_name)
