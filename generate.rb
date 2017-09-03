@@ -1,9 +1,8 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
+require 'fileutils'
 require 'json'
 require 'pp'
-require 'fileutils'
 
 
 def escape_for_regex(str)
@@ -11,23 +10,26 @@ def escape_for_regex(str)
   return str.gsub(/([\[\]\{\}\(\)\*\+\?\\\^\$\|\ \'\"])/, "\\\\\1")
 end
 
+def custom_abort(reason)
+  abort("ERROR: #{reason}")
+end
+
 def run
-  input_video_filename = ARGV[0]
-  if input_video_filename.nil?
-    custom_abort("Please provide an input video filepath.")
+  video_filepath = ARGV[0]
+  if video_filepath.nil?
+    custom_abort("Please provide a video filepath.")
   end
 
-  if not File.exists?(input_video_filename)
+  if not File.exists?(video_filepath)
     custom_abort("Unable to find filepath.")
   end
 
-  input_video_filename = Regexp.escape(input_video_filename)
+  video_filepath = Regexp.escape(video_filepath)
 
   # Get info on video using ffmpeg.
-  output = `ffprobe -v quiet -print_format json -pretty -show_format -show_streams #{input_video_filename}`
-  
+  output = `ffprobe -v quiet -print_format json -pretty -show_format -show_streams #{video_filepath}`
+
   ffmpeg_info = JSON.parse(output)
-  # pp ffmpeg_info
 
   format = ffmpeg_info['format']
   filename = format['filename'].split('/').pop()
@@ -57,7 +59,7 @@ def run
     :filesize => filesize,
     :resolution => resolution
   }
-  
+
   montage_config = {
     :dimensions => '326x246',
     :cols => 3,
@@ -84,7 +86,7 @@ def run
 
   (0..montage_config[:num_thumbnails]-1).to_a.each do |i|
     ss_val = i * (video_info[:duration_in_seconds] / montage_config[:num_thumbnails])
-    `ffmpeg -v quiet -ss #{ss_val} -i #{input_video_filename} -s #{montage_config[:dimensions]} #{thumbnail_folder_name}/#{i+1}.png`
+    `ffmpeg -y -v quiet -ss #{ss_val} -i #{video_filepath} -s #{montage_config[:dimensions]} #{thumbnail_folder_name}/#{i+1}.png`
   end
 
   cols = montage_config[:cols]
@@ -97,7 +99,7 @@ def run
 
   `convert montage.png -background '#EDEDED' -splice 0x130 -font Courier-Regular -pointsize 22 -annotate +15+34 "#{label}" montage.png`
 
-  output_filename = input_video_filename.sub /\.[^.]+\z/, ".png"
+  output_filename = video_filepath.sub /\.[^.]+\z/, ".png"
   `mv montage.png #{output_filename}`
 
   # Remove temp thumbnail folder.
@@ -105,10 +107,6 @@ def run
     FileUtils.rm_rf(thumbnail_folder_name)
   rescue Exception => ex
   end
-end
-
-def custom_abort(reason)
-  abort("Aborting. (#{reason})")
 end
 
 if __FILE__ == $0

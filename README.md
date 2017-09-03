@@ -1,7 +1,6 @@
 video-contact-sheet
 ===================
-Requires `ffmpeg`, `imagemagick`[, and `ghostscript`].
-
-Usage:
-
-    ./generate.rb foo.avi
+```
+brew install ffmpeg imagemagick ghostscript
+./generate.rb foo.avi
+```
